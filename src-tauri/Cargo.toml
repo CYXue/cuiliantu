@@ -27,7 +27,7 @@ serde_json = "1"
 # Image processing
 image = "0.25"
 webp = "0.3"
-color_quant = "1.1"
+color_quant = "2.0"
 base64 = "0.22"
 
 # Text watermark rendering (embedded Smiley Sans font)
