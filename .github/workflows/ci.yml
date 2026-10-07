@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           # Do not pin the version here: `.node-version` is the single source
           # of truth. A previous hard-coded `20` drifted from the local 22 and
