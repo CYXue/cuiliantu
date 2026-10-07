@@ -1,0 +1,61 @@
+[package]
+name = "cuiliantu"
+version = "0.2.1"
+description = "Batch image optimization and conversion tool"
+authors = ["CYXue"]
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/CYXue/cuiliantu"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "cuiliantu_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-notification = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Image processing
+image = "0.25"
+webp = "0.3"
+color_quant = "1.1"
+base64 = "0.22"
+
+# Text watermark rendering (embedded Smiley Sans font)
+ab_glyph = "0.2"
+imageproc = "0.25"
+
+# Parallel processing
+rayon = "1.10"
+
+# Directory traversal
+walkdir = "2"
+
+# Error handling
+thiserror = "2"
+
+# HTTP client for update checking.
+# rustls-tls keeps the TLS stack pure-Rust so all three desktop targets build
+# with identical behaviour and no system libraries (native-tls would require
+# OpenSSL headers on Linux, SChannel/Security.framework elsewhere).
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+clap = { version = "4.6.7", features = ["derive"] }
+kamadak-exif = "0.6.1"
+
+# Head-less command-line front-end. Reuses the library's batch runner so the
+# exact same pipeline (formats, resize, watermark, quantize, mirror, CSV
+# report) runs from a terminal. This binary is NOT bundled into the desktop
+# installer — it is built alongside `cuiliantu` for power users / scripting.
+[[bin]]
+name = "cuiliantu-cli"
+path = "src/bin/cli.rs"
+

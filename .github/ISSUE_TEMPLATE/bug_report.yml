@@ -1,0 +1,68 @@
+name: Bug Report
+description: Report a bug or issue
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug. Please fill out the information below.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: What problem are you experiencing?
+      placeholder: e.g., The app crashes when trying to convert images
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Please provide steps to reproduce the bug
+      placeholder: |
+        1. Launch the app
+        2. Drag and drop an image
+        3. Click the "Convert" button
+        4. Error occurs
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: How should it work?
+      placeholder: e.g., The image should be converted successfully and saved to the specified folder
+    validations:
+      required: false
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      description: Select your operating system
+      options:
+        - macOS
+        - Windows
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: App Version
+      description: Image Crunch version (check in settings)
+      placeholder: e.g., 1.0.0
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      description: Add screenshots, error messages, or any other relevant information
+    validations:
+      required: false
