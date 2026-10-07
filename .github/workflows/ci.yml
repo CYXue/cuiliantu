@@ -32,7 +32,7 @@ jobs:
         # single source of truth (corepack reads the same value locally).
         # A previous hard-coded `9` drifted from the local 12 and CI could not
         # parse the pnpm 11+ pnpm-workspace.yaml (allowBuilds) format.
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
