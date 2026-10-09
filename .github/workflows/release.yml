@@ -1,0 +1,78 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            args: --target aarch64-apple-darwin
+            target: aarch64-apple-darwin
+          - platform: macos-latest
+            args: --target x86_64-apple-darwin
+            target: x86_64-apple-darwin
+          - platform: windows-latest
+            args: ''
+            target: ''
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          # Do not pin the version here: `.node-version` is the single source
+          # of truth. A previous hard-coded `20` drifted from the local 22 and
+          # jsdom 30 (requiring Node 22+ APIs) failed only in CI.
+          node-version-file: '.node-version'
+
+      - name: Install pnpm
+        # Do not pin the version here: `packageManager` in package.json is the
+        # single source of truth (corepack reads the same value locally).
+        # A previous hard-coded `9` drifted from the local 12 and CI could not
+        # parse the pnpm 11+ pnpm-workspace.yaml (allowBuilds) format.
+        uses: pnpm/action-setup@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Add Rust target (macOS)
+        if: matrix.platform == 'macos-latest'
+        run: |
+          echo "::group::rustup target"
+          rustup target add ${{ matrix.target }}
+          echo "::endgroup::"
+
+      - name: Install frontend dependencies
+        run: |
+          echo "::group::pnpm install"
+          pnpm install
+          echo "::endgroup::"
+
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Ad-hoc signing for macOS (allows unsigned apps to run without "damaged" error)
+          APPLE_SIGNING_IDENTITY: ${{ matrix.platform == 'macos-latest' && '-' || '' }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'CuiLianTu ${{ github.ref_name }}'
+          releaseBody: |
+            ## Downloads
+            - **macOS (Apple Silicon)**: `CuiLianTu_*_aarch64.dmg`
+            - **macOS (Intel)**: `CuiLianTu_*_x64.dmg`
+            - **Windows**: `CuiLianTu_*_x64-setup.exe` or `.msi`
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}

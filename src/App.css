@@ -1,0 +1,611 @@
+@import "tailwindcss";
+
+/* ===== Design Tokens (Tailwind v4) =====
+   Aligned with the restrained, high-craft language of major tech sites
+   (Apple / DeepSeek / Huawei): low-saturation neutral surfaces, near-black
+   text, one restrained brand hue, barely-there layered shadows and hairline
+   borders instead of heavy glows. */
+@theme {
+  --font-sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system,
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei",
+    sans-serif;
+
+  /* Soft, layered, low-opacity shadows */
+  --shadow-sm: 0 1px 2px rgb(16 24 40 / 0.04);
+  --shadow-md: 0 1px 2px rgb(16 24 40 / 0.04), 0 4px 12px -2px rgb(16 24 40 / 0.06);
+  --shadow-lg: 0 2px 4px rgb(16 24 40 / 0.04), 0 12px 32px -8px rgb(16 24 40 / 0.1);
+  --shadow-xl: 0 4px 8px rgb(16 24 40 / 0.05), 0 24px 48px -12px rgb(16 24 40 / 0.14);
+}
+
+/* ===== Dark Mode =====
+   The whole UI is built from Tailwind's standard palette (slate / indigo /
+   rose / emerald / amber / violet / blue). Instead of editing every component,
+   we route each color token through a CSS variable: the utilities keep their
+   class names, and flipping `.dark` on <html> re-themes everything at once.
+   `white` / `black` are NOT mapped (kept literal) because `text-white` must
+   stay white on colored buttons; their surface uses get a `dark:` variant. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-slate-50: var(--c-slate-50);
+  --color-slate-100: var(--c-slate-100);
+  --color-slate-200: var(--c-slate-200);
+  --color-slate-300: var(--c-slate-300);
+  --color-slate-400: var(--c-slate-400);
+  --color-slate-500: var(--c-slate-500);
+  --color-slate-600: var(--c-slate-600);
+  --color-slate-700: var(--c-slate-700);
+  --color-slate-800: var(--c-slate-800);
+  --color-slate-900: var(--c-slate-900);
+
+  --color-indigo-50: var(--c-indigo-50);
+  --color-indigo-100: var(--c-indigo-100);
+  --color-indigo-200: var(--c-indigo-200);
+  --color-indigo-300: var(--c-indigo-300);
+  --color-indigo-400: var(--c-indigo-400);
+  --color-indigo-500: var(--c-indigo-500);
+  --color-indigo-600: var(--c-indigo-600);
+  --color-indigo-700: var(--c-indigo-700);
+  --color-indigo-800: var(--c-indigo-800);
+
+  --color-rose-50: var(--c-rose-50);
+  --color-rose-100: var(--c-rose-100);
+  --color-rose-200: var(--c-rose-200);
+  --color-rose-500: var(--c-rose-500);
+  --color-rose-600: var(--c-rose-600);
+  --color-rose-700: var(--c-rose-700);
+
+  --color-emerald-50: var(--c-emerald-50);
+  --color-emerald-100: var(--c-emerald-100);
+  --color-emerald-500: var(--c-emerald-500);
+  --color-emerald-600: var(--c-emerald-600);
+  --color-emerald-700: var(--c-emerald-700);
+
+  --color-amber-50: var(--c-amber-50);
+  --color-amber-200: var(--c-amber-200);
+  --color-amber-500: var(--c-amber-500);
+  --color-amber-600: var(--c-amber-600);
+  --color-amber-800: var(--c-amber-800);
+
+  --color-violet-50: var(--c-violet-50);
+  --color-violet-100: var(--c-violet-100);
+  --color-violet-500: var(--c-violet-500);
+  --color-violet-600: var(--c-violet-600);
+
+  --color-blue-50: var(--c-blue-50);
+  --color-blue-100: var(--c-blue-100);
+  --color-blue-500: var(--c-blue-500);
+  --color-blue-600: var(--c-blue-600);
+}
+
+/* Light values (Tailwind defaults) */
+:root {
+  --surface-app: #f5f6f8;
+  --surface-card: #ffffff;
+
+  --c-slate-50: #f8fafc;
+  --c-slate-100: #f1f5f9;
+  --c-slate-200: #e2e8f0;
+  --c-slate-300: #cbd5e1;
+  --c-slate-400: #94a3b8;
+  --c-slate-500: #64748b;
+  --c-slate-600: #475569;
+  --c-slate-700: #334155;
+  --c-slate-800: #1e293b;
+  --c-slate-900: #0f172a;
+
+  --c-indigo-50: #eef2ff;
+  --c-indigo-100: #e0e7ff;
+  --c-indigo-200: #c7d2fe;
+  --c-indigo-300: #a5b4fc;
+  --c-indigo-400: #818cf8;
+  --c-indigo-500: #6366f1;
+  --c-indigo-600: #4f46e5;
+  --c-indigo-700: #4338ca;
+  --c-indigo-800: #3730a3;
+
+  --c-rose-50: #fff1f2;
+  --c-rose-100: #ffe4e6;
+  --c-rose-200: #fecdd3;
+  --c-rose-500: #f43f5e;
+  --c-rose-600: #e11d48;
+  --c-rose-700: #be123c;
+
+  --c-emerald-50: #ecfdf5;
+  --c-emerald-100: #d1fae5;
+  --c-emerald-500: #10b981;
+  --c-emerald-600: #059669;
+  --c-emerald-700: #047857;
+
+  --c-amber-50: #fffbeb;
+  --c-amber-200: #fde68a;
+  --c-amber-500: #f59e0b;
+  --c-amber-600: #d97706;
+  --c-amber-800: #92400e;
+
+  --c-violet-50: #f5f3ff;
+  --c-violet-100: #ede9fe;
+  --c-violet-500: #8b5cf6;
+  --c-violet-600: #7c3aed;
+
+  --c-blue-50: #eff6ff;
+  --c-blue-100: #dbeafe;
+  --c-blue-500: #3b82f6;
+  --c-blue-600: #2563eb;
+}
+
+/* Dark values: low numbers become dark surfaces, high numbers become light
+   text. Accents keep their saturation so `bg-indigo-500 text-white` stays
+   legible, while `text-indigo-600` (badges) lifts to a light tint. */
+.dark {
+  --surface-app: #0b0d12;
+  --surface-card: #161b22;
+  --border-hairline: rgba(255, 255, 255, 0.09);
+
+  --c-slate-50: #171b22;
+  --c-slate-100: #1e242e;
+  --c-slate-200: #2a313c;
+  --c-slate-300: #8b94a3;
+  --c-slate-400: #9aa3b2;
+  --c-slate-500: #aab2c0;
+  --c-slate-600: #c2c9d6;
+  --c-slate-700: #d6dbe4;
+  --c-slate-800: #e6e9ef;
+  --c-slate-900: #f3f5f8;
+
+  --c-indigo-50: #1b1d3a;
+  --c-indigo-100: #232652;
+  --c-indigo-200: #2d2f66;
+  --c-indigo-300: #a5b4fc;
+  --c-indigo-400: #818cf8;
+  --c-indigo-500: #6366f1;
+  --c-indigo-600: #a5b4fc;
+  --c-indigo-700: #c7d2fe;
+  --c-indigo-800: #d6d9f7;
+
+  --c-rose-50: #2a1620;
+  --c-rose-100: #3a1b28;
+  --c-rose-200: #4a2230;
+  --c-rose-500: #fb7185;
+  --c-rose-600: #f43f5e;
+  --c-rose-700: #fda4af;
+
+  --c-emerald-50: #0c2a1e;
+  --c-emerald-100: #103326;
+  --c-emerald-500: #34d399;
+  --c-emerald-600: #34d399;
+  --c-emerald-700: #6ee7b7;
+
+  --c-amber-50: #2a210a;
+  --c-amber-200: #3f2f0e;
+  --c-amber-500: #fbbf24;
+  --c-amber-600: #f59e0b;
+  --c-amber-800: #fcd34d;
+
+  --c-violet-50: #1e1b35;
+  --c-violet-100: #26224a;
+  --c-violet-500: #a78bfa;
+  --c-violet-600: #c4b5fd;
+
+  --c-blue-50: #0e1f33;
+  --c-blue-100: #13294a;
+  --c-blue-500: #60a5fa;
+  --c-blue-600: #93c5fd;
+}
+
+/* ===== Base Styles ===== */
+svg {
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Ensure SVGs respect their width/height attributes */
+svg:not([width]):not([style*="width"]) {
+  width: 1em;
+  height: 1em;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* Numbers keep a fixed width: sizes and percents never jitter */
+  font-variant-numeric: tabular-nums;
+  /* Page surface follows the theme */
+  background-color: var(--surface-app);
+  color: var(--c-slate-800);
+  transition: background-color var(--duration-normal) var(--ease-smooth),
+    color var(--duration-normal) var(--ease-smooth);
+}
+
+::selection {
+  background: rgb(99 102 241 / 0.16);
+}
+
+/* ===== Design System Variables ===== */
+:root {
+  /* Primary Colors - Indigo to Violet (brand, used sparingly) */
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-200: #c7d2fe;
+  --color-primary-300: #a5b4fc;
+  --color-primary-400: #818cf8;
+  --color-primary-500: #6366f1;
+  --color-primary-600: #4f46e5;
+  --color-primary-700: #4338ca;
+  --color-primary-800: #3730a3;
+  --color-primary-900: #312e81;
+
+  /* Neutral ink scale (slightly cooler near-black for headings) */
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f4f8;
+  --color-slate-200: #e5e9f0;
+  --color-slate-300: #cdd4de;
+  --color-slate-400: #98a2b3;
+  --color-slate-500: #667085;
+  --color-slate-600: #475467;
+  --color-slate-700: #344054;
+  --color-slate-800: #1d2939;
+  --color-slate-900: #101828;
+
+  /* Hairline border color used across surfaces */
+  --border-hairline: rgb(16 24 40 / 0.07);
+
+  /* Unified focus ring */
+  --focus-ring: 0 0 0 3px rgb(99 102 241 / 0.16);
+
+  /* Gradients: brand accent only, no rainbow */
+  --gradient-primary: linear-gradient(120deg, #5b5bd6 0%, #7c66e9 100%);
+  --gradient-button: linear-gradient(135deg, #5b5bd6 0%, #6d56e0 100%);
+  --gradient-button-hover: linear-gradient(135deg, #4f4fc8 0%, #5d48d2 100%);
+  --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --gradient-shimmer: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.35) 50%, transparent 100%);
+
+  --shadow-glow-primary: 0 0 0 1px rgb(99 102 241 / 0.06);
+  --shadow-glow-rose: 0 0 20px rgb(239 68 68 / 0.18);
+
+  /* Animation */
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --duration-fast: 140ms;
+  --duration-normal: 200ms;
+  --duration-slow: 280ms;
+}
+
+/* ===== Keyframe Animations ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dropBounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.015);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Animation Utility Classes */
+.animate-fadeIn {
+  animation: fadeIn var(--duration-slow) var(--ease-smooth) forwards;
+}
+
+.animate-slideUp {
+  animation: slideUp var(--duration-slow) var(--ease-smooth) forwards;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s linear infinite;
+  background-size: 200% 100%;
+}
+
+.animate-pulse {
+  animation: pulse 2s var(--ease-smooth) infinite;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-dropBounce {
+  animation: dropBounce var(--duration-slow) var(--ease-spring);
+}
+
+/* ===== Custom Range Slider ===== */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 9999px;
+  background: linear-gradient(to right, var(--color-primary-500) 0%, var(--color-primary-500) var(--value, 50%), var(--color-slate-200) var(--value, 50%), var(--color-slate-200) 100%);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-smooth);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid rgb(16 24 40 / 0.1);
+  box-shadow: 0 1px 3px rgb(16 24 40 / 0.12), 0 2px 6px rgb(16 24 40 / 0.06);
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-spring), box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.08);
+  box-shadow: 0 2px 6px rgb(16 24 40 / 0.16);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid rgb(16 24 40 / 0.1);
+  box-shadow: 0 1px 3px rgb(16 24 40 / 0.12);
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-spring), box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.08);
+}
+
+input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--color-slate-200);
+}
+
+input[type="range"]:focus {
+  outline: none;
+}
+
+input[type="range"]:focus::-webkit-slider-thumb {
+  box-shadow: var(--focus-ring), 0 1px 3px rgb(16 24 40 / 0.12);
+}
+
+/* ===== Custom Select ===== */
+.custom-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23667085' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+  transition: border-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.custom-select:hover:not(:disabled) {
+  border-color: var(--color-slate-300);
+}
+
+.custom-select:focus {
+  outline: none;
+  border-color: var(--color-primary-400);
+  box-shadow: var(--focus-ring);
+}
+
+/* ===== Custom Checkbox ===== */
+.custom-checkbox {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--color-slate-300);
+  border-radius: 5px;
+  background: white;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-smooth);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.custom-checkbox:checked {
+  background: var(--color-primary-600);
+  border-color: var(--color-primary-600);
+}
+
+.custom-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 5.5px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.custom-checkbox:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.custom-checkbox:hover:not(:checked):not(:disabled) {
+  border-color: var(--color-primary-400);
+}
+
+/* ===== Custom Radio ===== */
+.custom-radio {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--color-slate-300);
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-smooth);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.custom-radio:checked {
+  border-color: var(--color-primary-600);
+  background: white;
+}
+
+.custom-radio:checked::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  background: var(--color-primary-600);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.custom-radio:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.custom-radio:hover:not(:checked):not(:disabled) {
+  border-color: var(--color-primary-400);
+}
+
+/* ===== Custom Input ===== */
+.custom-input {
+  transition: border-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.custom-input:focus {
+  outline: none;
+  border-color: var(--color-primary-400);
+  box-shadow: var(--focus-ring);
+}
+
+/* ===== Card Styles =====
+   Solid surface + hairline border + one soft shadow. Hierarchy comes from
+   the surface, not from glow. */
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-hairline);
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgb(16 24 40 / 0.03), 0 8px 24px -16px rgb(16 24 40 / 0.08);
+  transition: border-color var(--duration-normal) var(--ease-smooth),
+    box-shadow var(--duration-normal) var(--ease-smooth),
+    background-color var(--duration-normal) var(--ease-smooth);
+}
+
+.card:hover {
+  border-color: rgb(16 24 40 / 0.11);
+}
+
+.dark .card:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* ===== Progress Bar ===== */
+.progress-bar-track {
+  background: var(--color-slate-100);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  background: var(--gradient-primary);
+  border-radius: 9999px;
+  position: relative;
+  transition: width var(--duration-normal) var(--ease-smooth);
+}
+
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-shimmer);
+  animation: shimmer 2s linear infinite;
+}
+
+/* ===== Custom Scrollbar ===== */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgb(16 24 40 / 0.14);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgb(16 24 40 / 0.24);
+}
+
+/* ===== Gradient Text =====
+   Reserved for brand accents; headings prefer solid ink. */
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ===== Glass Effect ===== */
+.glass {
+  background: rgb(255 255 255 / 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-hairline);
+}
