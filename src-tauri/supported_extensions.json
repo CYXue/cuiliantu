@@ -1,0 +1,13 @@
+{
+  "input": [
+    { "ext": "jpg", "format": "jpeg" },
+    { "ext": "jpeg", "format": "jpeg" },
+    { "ext": "png", "format": "png" },
+    { "ext": "gif", "format": "gif" },
+    { "ext": "bmp", "format": "bmp" },
+    { "ext": "tif", "format": "tiff" },
+    { "ext": "tiff", "format": "tiff" },
+    { "ext": "webp", "format": "webp" }
+  ],
+  "watermark": ["png", "jpg", "jpeg", "webp"]
+}

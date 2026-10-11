@@ -1,0 +1,75 @@
+[package]
+name = "cuiliantu"
+version = "0.2.2"
+description = "Batch image optimization and conversion tool"
+authors = ["CYXue"]
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/CYXue/cuiliantu"
+default-run = "cuiliantu"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "cuiliantu_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-notification = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Image processing. Only the codecs the app actually supports are enabled —
+# the default feature set also pulls in ico/tga/dds/qoi/hdr/openexr/avif
+# decoders we never read or write, which costs compile time and binary size
+# for nothing. `ImageFormat` itself stays complete; unsupported formats just
+# fail at decode time.
+image = { version = "0.25", default-features = false, features = [
+  "jpeg",
+  "png",
+  "gif",
+  "bmp",
+  "tiff",
+  "webp",
+] }
+webp = { version = "0.3", default-features = false }
+color_quant = "1.1"
+base64 = "0.22"
+
+# Text watermark rendering (embedded Smiley Sans font). `default-features =
+# false` drops imageproc's own `image/default` requirement, which would
+# otherwise silently re-enable every image codec we trimmed above.
+ab_glyph = "0.2"
+imageproc = { version = "0.25", default-features = false, features = ["rayon"] }
+
+# Parallel processing
+rayon = "1.10"
+
+# Directory traversal
+walkdir = "2"
+
+# Error handling
+thiserror = "2"
+
+# HTTP client for update checking.
+# rustls-tls keeps the TLS stack pure-Rust so all three desktop targets build
+# with identical behaviour and no system libraries (native-tls would require
+# OpenSSL headers on Linux, SChannel/Security.framework elsewhere).
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+clap = { version = "4.6.7", features = ["derive"] }
+kamadak-exif = "0.6.1"
+
+# Head-less command-line front-end. Reuses the library's batch runner so the
+# exact same pipeline (formats, resize, watermark, quantize, mirror, CSV
+# report) runs from a terminal. This binary is NOT bundled into the desktop
+# installer — it is built alongside `cuiliantu` for power users / scripting.
+[[bin]]
+name = "cuiliantu-cli"
+path = "src/bin/cli.rs"
+

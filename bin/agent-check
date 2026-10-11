@@ -1,0 +1,124 @@
+#!/usr/bin/env bash
+#
+# bin/agent-check — the "definition of done" checker for AI agents.
+#
+# Usage:
+#   ./bin/agent-check          # run every check
+#   ./bin/agent-check --quick  # skip Rust, frontend only
+#   ./bin/agent-check --fix    # auto-fix what is fixable, then check
+#
+# Environment:
+#   AGENT_CHECK_BASE=main      # base branch for the Rust diff check (default: main)
+#
+# Exit code: 0 = green / 1 = at least one check failed.
+
+set -uo pipefail
+cd "$(dirname "$0")/.." || exit 1
+
+# IMPORTANT: NODE_ENV is set per stage, never once for the whole script.
+#
+#   A host process such as the Claude desktop app carries NODE_ENV=production,
+#   and a shell spawned from it inherits that value.
+#   Running vitest in that state resolves React to the production build, where
+#   act() is unavailable and every @testing-library/react test fails.
+#   Pinning the entire script to NODE_ENV=test instead breaks vite build, whose
+#   behaviour would no longer match production.
+#
+#   So each stage gets the NODE_ENV it needs. Never add a stage that simply
+#   inherits whatever value it was handed.
+NODE_ENV_TEST=test
+NODE_ENV_BUILD=production
+
+QUICK=0
+FIX=0
+for arg in "$@"; do
+  case "$arg" in
+    --quick) QUICK=1 ;;
+    --fix)   FIX=1 ;;
+    -h|--help) sed -n '2,13p' "$0"; exit 0 ;;
+    *) echo "unknown option: $arg" >&2; exit 2 ;;
+  esac
+done
+
+BASE="${AGENT_CHECK_BASE:-main}"
+
+PNPM="pnpm"
+command -v pnpm >/dev/null 2>&1 || { echo "pnpm not found" >&2; exit 2; }
+
+FAILED_STAGE=""
+TIMINGS=""
+
+run_stage() {
+  # run_stage <stage-name> <description> <command...>
+  local name="$1"; shift
+  local desc="$1"; shift
+  local start end out rc
+  printf '── %-10s %s\n' "$name" "$desc"
+  start=$(date +%s)
+  out=$("$@" 2>&1)
+  rc=$?
+  end=$(date +%s)
+  TIMINGS="${TIMINGS}${name}:$((end - start))s "
+  if [ $rc -ne 0 ]; then
+    echo "$out" | tail -40
+    [ -z "$FAILED_STAGE" ] && FAILED_STAGE="$name"
+    return 1
+  fi
+  return 0
+}
+
+if [ "$FIX" = "1" ]; then
+  echo "── fix       biome check --write"
+  env NODE_ENV="$NODE_ENV_TEST" $PNPM exec biome check --write . >/dev/null 2>&1
+  ( cd src-tauri && cargo fmt --all ) >/dev/null 2>&1
+fi
+
+OK=1
+
+# --- frontend --------------------------------------------------------------
+run_stage lint "biome check" \
+  env NODE_ENV="$NODE_ENV_TEST" $PNPM exec biome check . || OK=0
+
+run_stage typecheck "tsc --noEmit" \
+  env NODE_ENV="$NODE_ENV_TEST" $PNPM exec tsc --noEmit || OK=0
+
+run_stage test "vitest run" \
+  env NODE_ENV="$NODE_ENV_TEST" $PNPM exec vitest run || OK=0
+
+run_stage build "vite build" \
+  env NODE_ENV="$NODE_ENV_BUILD" $PNPM exec vite build || OK=0
+
+# --- Rust -------------------------------------------------------------------
+# Skipped when src-tauri has no diff: a full clippy build takes ~50s.
+if [ "$QUICK" = "1" ]; then
+  echo "── rust       skip (--quick)"
+elif ! git rev-parse --verify "$BASE" >/dev/null 2>&1; then
+  echo "── rust       skip (base branch $BASE not found)"
+elif git diff --quiet "$BASE"...HEAD -- src-tauri && git diff --quiet HEAD -- src-tauri; then
+  echo "── rust       skip (no diff in src-tauri)"
+else
+  # IMPORTANT: cargo resolves its config relative to the current directory, so
+  #   `cd` into src-tauri instead of passing --manifest-path.
+  run_stage rustfmt "cargo fmt --check" \
+    bash -c 'cd src-tauri && cargo fmt --all -- --check' || OK=0
+  run_stage clippy "cargo clippy -D warnings" \
+    bash -c 'cd src-tauri && cargo clippy --all-targets -- -D warnings' || OK=0
+  run_stage rusttest "cargo test" \
+    bash -c 'cd src-tauri && cargo test' || OK=0
+fi
+
+echo
+echo "=== AGENT-CHECK RESULT ==="
+if [ "$OK" = "1" ]; then
+  echo "STATUS: PASS"
+  echo "TIMINGS: ${TIMINGS}"
+  echo "NEXT: You may open a PR. Merging is a human's job — do not merge."
+  exit 0
+else
+  echo "STATUS: FAIL"
+  echo "FAILED_STAGE: $FAILED_STAGE"
+  echo "TIMINGS: ${TIMINGS}"
+  echo "NEXT: Fix the $FAILED_STAGE error above, then re-run bin/agent-check."
+  echo "NEXT: Do not open a PR until this reports green."
+  exit 1
+fi

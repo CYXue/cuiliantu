@@ -1,0 +1,18 @@
+# worktrunk (wt) project configuration.
+#
+# IMPORTANT: the file belonging to the worktree you are *in* is the one read.
+#   Without this file on `main`, worktrees branched from it never fire hooks.
+#
+# IMPORTANT: do not use `wt step copy-ignored`.
+#   A dry run showed it copying 40,827 files / 17.0 GiB, because it included
+#   the Rust target directory. Ignored paths should be *regenerated*, not
+#   copied: for cuiliantu (formerly image-crunch / tucui) that means
+#   node_modules (119 MB) and src-tauri/target (920 MB).
+
+[hooks]
+# Reinstall dependencies right after creating a worktree (a few seconds, since
+# the pnpm store is shared).
+pre-start = "pnpm install --frozen-lockfile"
+
+# Verify the definition of done before merging.
+pre-merge = "bin/agent-check"
